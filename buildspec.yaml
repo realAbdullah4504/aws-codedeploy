@@ -7,6 +7,8 @@ phases:
   install:
     runtime-versions:
       nodejs: 16
+    commands:
+      - echo "Installing custom Node.js version 16 ..."  # Optional
   pre_build:
     commands:
       - echo Installing dependencies...
@@ -28,10 +30,9 @@ cache:
   paths:
     - react/node_modules/**/*
     - react/build/**/*
-  key: 
-    files:
-      - react/package.json
-      - react/package-lock.json
+  files:
+    - react/package.json
+    - react/package-lock.json
 
 artifacts:
   files:
