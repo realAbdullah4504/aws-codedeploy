@@ -11,6 +11,7 @@ phases:
     commands:
       - echo Installing dependencies...
       - cd react
+      - codebuild-breakpoint
       - if [ ! -d "node_modules" ] ; then npm ci ; fi
   build:
     commands:
