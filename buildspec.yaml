@@ -1,7 +1,8 @@
 version: 0.2
 
 env:
-  
+  variables:
+    REACT_APP_API_URL: "/api"
 phases:
   install:
     runtime-versions:
@@ -18,9 +19,9 @@ phases:
   post_build:
     commands:
       - echo Packaging build...
+      - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
       - cd ..
       - zip -r build.zip react/build
-
 cache:
   paths:
     - 'react/node_modules/**/*'
