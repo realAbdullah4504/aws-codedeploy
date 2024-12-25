@@ -9,6 +9,9 @@ phases:
       nodejs: 16
   pre_build:
     commands:
+      - echo "Cache location check..."
+      - find /codebuild/output/cache -type f | wc -l    # Count cached files
+      - ls -la /codebuild/output/cache                  # List cache directory
       - echo Installing dependencies...
       - cd react
       - codebuild-breakpoint
@@ -23,6 +26,7 @@ phases:
       - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
       - cd ..
       - zip -r build.zip react/build
+      - codebuild-breakpoint
 cache:
   paths:
     - 'react/node_modules/**/*'
