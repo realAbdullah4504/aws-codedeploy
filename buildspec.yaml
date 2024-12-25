@@ -14,11 +14,11 @@ phases:
       - echo Installing dependencies...
       - cd react
       - codebuild-breakpoint
-      - if [ ! -d "node_modules" ] ; then npm ci ; fi
+      - npm ci
   build:
     commands:
       - echo Building React application...
-      - if [ ! -d "build" ] ; then npm run build ; fi
+      - npm run build
   post_build:
     commands:
       - echo Packaging build...
@@ -26,13 +26,19 @@ phases:
       - cd ..
       - zip -r build.zip react/build
       - codebuild-breakpoint
+
 cache:
   paths:
     - 'react/node_modules/**/*'
-    - 'react/build/**/*'
   files:
     - react/package.json
     - react/package-lock.json
+
+secondary-cache:
+  paths:
+    - 'react/build/**/*'
+  files:
+    - react/src/**/*
 
 artifacts:
   files:
