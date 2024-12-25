@@ -1,5 +1,7 @@
 version: 0.2
 
+env:
+  
 phases:
   install:
     runtime-versions:
@@ -8,11 +10,11 @@ phases:
     commands:
       - echo Installing dependencies...
       - cd react
-      - npm install
+      - if [ ! -d "node_modules" ] ; then npm ci ; fi
   build:
     commands:
       - echo Building React application...
-      - npm run build
+      - if [ ! -d "build" ] ; then npm run build ; fi
   post_build:
     commands:
       - echo Packaging build...
