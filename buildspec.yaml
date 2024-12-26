@@ -22,9 +22,9 @@ phases:
   post_build:
     commands:
       - echo Packaging build...
-      - cd build
+      - cd ..
       # - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
-      - zip -r ../../build.zip .
+      - zip -r build.zip react/build/*
       - codebuild-breakpoint
 cache:
   paths:
