@@ -1,7 +1,7 @@
 version: 0.0
 os: linux
 files:
-  - source: react/build
+  - source: /
     destination: /usr/share/nginx/html/news-app/
 hooks:
   BeforeInstall:
