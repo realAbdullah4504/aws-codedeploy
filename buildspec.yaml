@@ -37,4 +37,6 @@ cache:
 artifacts:
   files:
     - build.zip
+    - scripts/*
+    - appspec.yml
   discard-paths: no
