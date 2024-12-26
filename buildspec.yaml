@@ -24,16 +24,15 @@ phases:
       - echo Packaging build...
       - cd ..
       # - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
-      - zip -r build.zip react/build/*
+      - zip -r build.zip react/build/* scripts/* appspec.yml
       - codebuild-breakpoint
 cache:
   paths:
     - 'react/node_modules/**/*'
     - 'react/build/**/*'
+  
 
 artifacts:
   files:
     - 'build.zip'
-    - 'scripts/*'
-    - 'appspec.yml'
   discard-paths: no
