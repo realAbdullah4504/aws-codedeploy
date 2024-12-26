@@ -30,9 +30,6 @@ cache:
   paths:
     - 'react/node_modules/**/*'
     - 'react/build/**/*'
-  files:
-    - react/package.json
-    - react/package-lock.json
 
 artifacts:
   files:
