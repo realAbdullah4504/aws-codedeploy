@@ -1,4 +1,5 @@
 #!/bin/bash -ex
 
-nginx -t
-systemctl start nginx
+source /home/ec2-user/news-app-backend/.venv/bin/activate
+cd /home/ec2-user/news-app-backend
+pm2 start article_api.py --interpreter python3

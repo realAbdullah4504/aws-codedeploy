@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: react/build/
-    destination: /usr/share/nginx/html/
+  - source: /
+    destination: /home-ec2-user/news-app-backend
 hooks:
   ApplicationStop:
     - location: scripts/stop_server
@@ -13,9 +13,8 @@ hooks:
     - location: scripts/install_dependencies
       timeout: 300
       runas: root
-
   AfterInstall:
-    - location: scripts/configure_nginx
+    - location: scripts/setup_dependencies
       timeout: 300
       runas: root
   ApplicationStart:
