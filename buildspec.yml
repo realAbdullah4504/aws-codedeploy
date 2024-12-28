@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    REACT_APP_API_URL: "/api"
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo "Installing custom Node.js version 16 ..."
+  pre_build:
+    commands:
+      - echo Installing dependencies...
+      - cd react
+      - codebuild-breakpoint
+      - if [ ! -d "node_modules" ] ; then npm ci ; fi
+  build:
+    commands:
+      - echo Building React application...
+      - echo "REACT_APP_API_URL=$REACT_APP_API_URL" > .env
+      - if [ ! -d "build" ] ; then npm run build ; fi
+  post_build:
+    commands:
+      - echo Packaging build...
+      - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
+      - cd ..
+      - zip -r build.zip react/build appspec.yml scripts
+      - codebuild-breakpoint
+# cache:
+#   paths:
+#     - 'react/node_modules/**/*'
+#     - 'react/build/**/*'
+#   files:
+#     - react/package.json
+#     - react/package-lock.json
+
+artifacts:
+  files:
+    - build.zip
+  discard-paths: no
