@@ -23,8 +23,8 @@ phases:
   post_build:
     commands:
       - echo Packaging build...
-      - aws s3 sync --acl public-read build/ s3://123456-abdullah-bucket/
       - cd ..
+      - chmod +x scripts/*
       - zip -r build.zip react/build appspec.yml scripts
       - codebuild-breakpoint
 # cache:
