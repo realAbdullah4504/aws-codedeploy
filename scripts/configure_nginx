@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-cat << EOF | sudo tee /etc/nginx/conf.d/news-app.conf
+cat << 'EOF' | sudo tee /etc/nginx/conf.d/news-app.conf
 server {
     listen 80;
     server_name _;
