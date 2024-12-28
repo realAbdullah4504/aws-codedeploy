@@ -24,18 +24,21 @@ phases:
     commands:
       - echo Packaging build...
       - cd ..
-      - chmod +x scripts/*
-      - zip -r build.zip react/build appspec.yml scripts
-      - codebuild-breakpoint
-# cache:
-#   paths:
-#     - 'react/node_modules/**/*'
-#     - 'react/build/**/*'
+      # - chmod +x scripts/*
+      # - zip -r build.zip react/build appspec.yml scripts
+cache:
+  paths:
+    - 'react/node_modules/**/*'
+    - 'react/build/**/*'
 #   files:
 #     - react/package.json
 #     - react/package-lock.json
 
 artifacts:
   files:
-    - build.zip
+    # - build.zip
+    - 'react/build/**/*'
+    - 'appspec.yml'
+    - 'scripts/*'
+    
   discard-paths: no
