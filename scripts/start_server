@@ -1,5 +1,5 @@
 #!/bin/bash -ex
 
 source /home/ec2-user/news-app-backend/.venv/bin/activate
-cd /home/ec2-user/news-app-backend
+# start the pm2 package
 pm2 start article_api.py --interpreter python3

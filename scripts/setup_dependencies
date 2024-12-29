@@ -1,9 +1,0 @@
-#!/bin/bash -ex
-
-cd /home/ec2-user/news-app-backend/
-python3 -m venv venv
-
-source /home/ec2-user/news-app-backend/venv/bin/activate
-pip3 install -r /home/ec2-user/news-app-backend/requirements.txt
-
-deactivate

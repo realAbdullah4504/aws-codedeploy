@@ -1,4 +1,5 @@
-#!/bin/bash -ex
+#!/bin/bash
+set -ex
 
 echo "Stopping article_api application..."
 isExistApp=`pm2 show article_api | grep -c "running" || true`
