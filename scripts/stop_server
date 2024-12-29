@@ -3,9 +3,9 @@
 echo "Stopping article_api application..."
 isExistApp=`pm2 show article_api | grep -c "running" || true`
 if [ $isExistApp -gt 0 ]; then
-  echo "Application is running, stopping now..."
-  pm2 stop article_api
-  echo "Application stopped successfully"
+    echo "Application is running, stopping now..."
+    pm2 stop article_api
+    echo "Application stopped successfully"
 else
-  echo "Application is not running"
+    echo "Application is not running"
 fi
