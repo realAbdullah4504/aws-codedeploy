@@ -7,7 +7,7 @@ flask_mail==0.10.0
 newsapi_python==0.2.7
 newspaper3k==0.2.8
 nltk==3.9.1
-numpy==2.1.2
+numpy==2.0.2
 pandas==2.2.3
 pymongo==4.10.1
 python-dotenv==1.0.1

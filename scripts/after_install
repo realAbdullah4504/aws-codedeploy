@@ -1,12 +1,16 @@
 #!/bin/bash -ex
 
 # venv is a Python virtual environment
-python3 -m venv /home/ec2-user/news-app-backend/.venv
+cd /home/ec2-user/news-app-backend
+python3 -m venv .venv
 
 # Activate the virtual environment
-source /home/ec2-user/news-app-backend/.venv/bin/activate
+source .venv/bin/activate
 
 # Install Python dependencies
-cd /home/ec2-user/news-app-backend && pip install -r requirements.txt
+pip3 install -r requirements.txt
+if [ ! -f .env ]; then 
+echo 'MONGO_URI=mongodb://localhost:27017/' >> .env; 
+fi
 
 deactivate
