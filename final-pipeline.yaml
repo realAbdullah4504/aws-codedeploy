@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 instance with IAM role and user data'
+
+Parameters:
+  SecurityGroup:
+    Type: String
+    Description: 'Name of the security group for the EC2 instance'
+    Default: 'jenkins-agent'
+    MinLength: 1
+    
+  IamProfile:
+    Type: String
+    Description: 'ARN of the IAM Instance Profile for EC2 instance'
+    Default: 'ec2S3FullAccess'
+    MinLength: 1
+    
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: 'Name of the SSH key pair to use for EC2 instance'
+    Default: 'keypair'
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0fd05997b4dff7aac
+      SecurityGroups:
+        - !Ref SecurityGroup
+      IamInstanceProfile: !Ref IamProfile
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: !Sub | 
+          #!/bin/bash
+          yum update -y
+          yum install httpd -y
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
