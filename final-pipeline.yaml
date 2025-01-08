@@ -87,7 +87,7 @@ Resources:
           fi
 
   ##########################
-  # CodeBuild Configuration
+  # CodeBuild Frontend Configuration
   ##########################
 
   CodeBuildRole:
@@ -126,7 +126,7 @@ Resources:
       SourceVersion: cloud-formation-stack
 
   ##########################
-  # CodeDeploy Configuration
+  # CodeDeploy Frontend Configuration
   ##########################
 
   CodeDeployRole:
@@ -174,7 +174,7 @@ Resources:
           - DEPLOYMENT_FAILURE
 
   ##########################
-  # CodePipeline resources
+  # CodePipeline Frontend resources
   ##########################
   CodePipelineArtifactStoreS3Bucket:
     Type: AWS::S3::Bucket
@@ -248,3 +248,33 @@ Resources:
                 ApplicationName: !Ref CodeDeployApplication
                 DeploymentGroupName: !Ref CodeDeployDeploymentGroup
               RunOrder: 1
+
+  ##########################
+  # CodeBuild Backend resources
+  ##########################
+  CodeBuildProjectBackend:
+      Type: AWS::CodeBuild::Project
+      Properties:
+        Name: !Sub ${AWS::StackName}-build-backend
+        Artifacts:
+          Type: S3
+          Location: 123456-abdullah-bucket
+        Environment:
+          ComputeType: BUILD_GENERAL1_SMALL
+          Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+          Type: LINUX_CONTAINER
+        ServiceRole: !Ref CodeBuildRole
+        Source:
+          Type: GITHUB
+          Auth:
+            Type: OAUTH
+          Location: https://github.com/realAbdullah4504/aws-codedeploy.git
+          BuildSpec: backend/buildspec.yaml
+        SourceVersion: cloud-formation-stack
+
+  ##########################
+  # CodeDeploy Backend resources
+  ##########################
+  ##########################
+  # CodePipeline Backend resources
+  ##########################

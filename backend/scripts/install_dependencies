@@ -1,0 +1,22 @@
+#!/bin/bash
+set -ex
+
+# Update system packages
+yum update -y
+
+# Install Node.js
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+yum install -y nodejs
+
+# Install the pm2 package
+which pm2 || npm install -g pm2
+
+# Create directory if it doesn't exist
+if [ ! -d /home/ec2-user/news-app-backend/ ]; then
+    mkdir -p /home/ec2-user/news-app-backend/
+fi
+
+# Clean up existing files
+if [ -d /usr/share/nginx/html/ ]; then
+    rm -rf /home/ec2-user/news-app-backend/*
+fi
