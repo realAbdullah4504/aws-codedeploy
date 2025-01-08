@@ -40,6 +40,9 @@ Resources:
 
   EC2Instance:
     Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT3M
     Properties:
       InstanceType: t2.micro
       ImageId: ami-0fd05997b4dff7aac
@@ -85,6 +88,7 @@ Resources:
           echo "Error: Service check failed"
           exit 1
           fi
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
 
   ##########################
   # CodeBuild Frontend Configuration
@@ -275,6 +279,85 @@ Resources:
   ##########################
   # CodeDeploy Backend resources
   ##########################
+  CodeDeployApplicationBackend:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Sub ${AWS::StackName}-app-backend
+      ComputePlatform: Server
+
+  CodeDeployDeploymentBackendGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    DependsOn: 
+      - CodeDeployApplication
+      - EC2Instance
+    Properties:
+      ApplicationName: !Ref CodeDeployApplicationBackend
+      DeploymentGroupName: !Sub "${AWS::StackName}-deployment-backend-group"
+      ServiceRoleArn: !GetAtt CodeDeployRole.Arn
+      DeploymentStyle:
+        DeploymentType: IN_PLACE
+        DeploymentOption: WITHOUT_TRAFFIC_CONTROL
+      DeploymentConfigName: CodeDeployDefault.AllAtOnce
+      Ec2TagFilters:
+        - Key: Name
+          Value: jenkins-agent
+          Type: KEY_AND_VALUE
+      AutoRollbackConfiguration:
+        Enabled: true
+        Events:
+          - DEPLOYMENT_FAILURE
   ##########################
   # CodePipeline Backend resources
   ##########################
+
+  CodePipelineBackend:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref CodePipelineArtifactStoreS3Bucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: "1"
+                Provider: CodeStarSourceConnection
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                FullRepositoryId: realAbdullah4504/aws-codedeploy
+                BranchName: cloud-formation-stack
+                ConnectionArn: arn:aws:codeconnections:ap-south-1:588738579221:connection/51340ca1-e197-4f09-ab0c-bccdc806b303
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: "1"
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildProjectBackend
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: "1"
+                Provider: CodeDeploy
+              InputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ApplicationName: !Ref CodeDeployApplicationBackend
+                DeploymentGroupName: !Ref CodeDeployDeploymentBackendGroup
