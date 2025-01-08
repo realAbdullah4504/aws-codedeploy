@@ -1,7 +1,7 @@
 version: 0.0
 os: linux
 files:
-  - source: backend/backend/
+  - source: backend/
     destination: /home/ec2-user/news-app-backend/
 hooks:
   ApplicationStop:
