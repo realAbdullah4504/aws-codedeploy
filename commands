@@ -18,5 +18,8 @@ aws cloudformation describe-stack-events --stack-name final-pipeline
 aws cloudformation describe-stacks --stack-name final-pipeline
 
 
+aws codepipeline get-pipeline --name <pipeline-name>
+
+
 
 
