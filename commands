@@ -1,0 +1,22 @@
+aws cloudformation create-stack \
+  --stack-name final-pipeline \
+  --template-body file://final-pipeline.yaml \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --role-arn arn:aws:iam::588738579221:role/CloudFormationEC2FullAccess
+
+aws cloudformation update-stack \
+  --stack-name final-pipeline \
+  --template-body file://final-pipeline.yaml \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --role-arn arn:aws:iam::588738579221:role/CloudFormationEC2FullAccess
+
+aws cloudformation delete-stack \
+  --stack-name final-pipeline
+
+aws cloudformation describe-stack-events --stack-name final-pipeline
+
+aws cloudformation describe-stacks --stack-name final-pipeline
+
+
+
+
