@@ -8,9 +8,6 @@ env:
     REPOSITORY_URI: public.ecr.aws/n0k0s5r9/handyman-app
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.11
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR Public..."
@@ -20,7 +17,6 @@ phases:
       
   build:
     commands:
-      - codebuild-breakpoint
       - echo "Build started on `date`"
       - echo "Building the Docker image..."
       - cd handyman
