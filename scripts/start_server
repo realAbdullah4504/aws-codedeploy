@@ -1,4 +1,0 @@
-#!/bin/bash -ex
-
-nginx -t
-systemctl start nginx
