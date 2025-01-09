@@ -8,6 +8,9 @@ env:
     REPOSITORY_URI: public.ecr.aws/n0k0s5r9/handyman-app
 
 phases:
+  install:
+    runtime-versions:
+      docker: latest
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR Public..."
