@@ -24,3 +24,9 @@ phases:
       - docker push ${REPOSITORY_URI}:latest
       - docker push ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
       - echo "Build completed on `date`"
+artifacts:
+  files:
+    - 'handyman/handyman-docker-compose.yml'
+    - 'handyman/mongo-docker-compose.yml'
+    - 'appspec.yml'
+    - 'scripts/*'

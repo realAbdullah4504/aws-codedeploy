@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: handyman/handyman-docker-compose.yml
+    destination: /home/ubuntu/handyman
+hooks:
+  BeforeInstall:
+    - location: scripts/install_dependencies
+      timeout: 300
+      runas: root
+  ApplicationStop:
+    - location: scripts/stop_server
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: scripts/start_server
+      timeout: 300
+      runas: root

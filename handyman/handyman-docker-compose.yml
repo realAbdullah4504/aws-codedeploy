@@ -2,7 +2,7 @@ services:
   handyman-app:
     # build:
     #   context: ./handyman
-    image: abdullah111111/handyman-app
+    image: public.ecr.aws/n0k0s5r9/handyman-app:11
     ports:
       - "3000:3000"
     # depends_on:
