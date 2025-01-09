@@ -12,11 +12,46 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Name of the SSH key pair to use for EC2 instance
     Default: keypair
+  
+  MongoDBVolumeId:
+    Type: String
+    Default: ""
+    Description: "Existing volume ID (leave empty for new volume)"
+
+
+Conditions:
+  CreateVolume: !Equals [!Ref MongoDBVolumeId, ""]
+  NotCreateVolume: !Not [!Equals [!Ref MongoDBVolumeId, ""]]
+
 Resources:
 
   ##########################
   # EC2 server configuration
   ##########################
+
+  MongoDBVolume:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: Retain    # Prevents accidental deletion of data
+    Condition: CreateVolume
+    Properties:
+      AvailabilityZone: !GetAtt EC2Instance.AvailabilityZone
+      Size: 2
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: MongoDB-Data
+  
+  MongoDBVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: /dev/xvdf    # Device name for Linux instances
+      InstanceId: !Ref EC2Instance
+      VolumeId: 
+        "Fn::If":
+          - CreateVolume
+          - !Ref MongoDBVolume
+          - !Ref MongoDBVolumeId 
+
   EC2S3FullAccessRole:
     Type: AWS::IAM::Role
     Properties:
@@ -29,6 +64,7 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
       RoleName: EC2S3FullAccessRole
 
   EC2InstanceProfile:
@@ -40,9 +76,9 @@ Resources:
 
   EC2Instance:
     Type: AWS::EC2::Instance
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT3M
+    # CreationPolicy:
+    #   ResourceSignal:
+    #     Timeout: PT3M
     Properties:
       InstanceType: t2.micro
       ImageId: ami-0fd05997b4dff7aac
@@ -58,13 +94,45 @@ Resources:
           #!/bin/bash
           # Update system packages
           sudo yum update -y
+
+          # Device and Mount Point
+
+          DEVICE="/dev/xvdf"
+          MOUNT_POINT="/var/lib/mongo"
+          while [ ! -e $DEVICE ]; do 
+          echo "Waiting for device $DEVICE to appear..."
+          sleep 1; 
+          done
+
+          # Check if the device is formatted as ext4
+          if ! blkid $DEVICE | grep -q "TYPE=\"ext4\""; then
+            echo "Formatting $DEVICE as ext4..."
+            # Ensure the device is not mounted before formatting
+            sudo umount $DEVICE || true
+            sudo mkfs.ext4 $DEVICE
+          fi
+
+          # Create the mount point if it doesn't exist
+          sudo mkdir -p $MOUNT_POINT
+
+          # Mount the device
+          echo "Mounting $DEVICE to $MOUNT_POINT..."
+          sudo mount $DEVICE $MOUNT_POINT
+
+          # Update /etc/fstab to ensure persistence
+          if ! grep -qs "$DEVICE" /etc/fstab; then
+            echo "$DEVICE $MOUNT_POINT ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+          fi
+
           # Install required dependencies
           sudo yum install -y ruby wget
+
           # Install AWS CodeDeploy agent
           cd ~
           wget https://aws-codedeploy-us-west-2.s3.us-west-2.amazonaws.com/latest/install
           chmod +x ./install
           sudo ./install auto
+
           # Add MongoDB Repository
           cat << 'EOF' | sudo tee /etc/yum.repos.d/mongodb-org-8.0.repo
           [mongodb-org-8.0]
@@ -74,21 +142,18 @@ Resources:
           enabled=1
           gpgkey=https://pgp.mongodb.com/server-8.0.asc
           EOF
+
           # Install MongoDB components
           sudo yum install -qy mongodb-mongosh-shared-openssl3
           sudo yum install -y mongodb-org-8.0.4 mongodb-org-database-8.0.4 mongodb-org-server-8.0.4 mongodb-org-mongos-8.0.4 mongodb-org-tools-8.0.4
+
           # Start MongoDB service
           sudo systemctl start mongod
-          sudo systemctl enable mongod  # Enable MongoDB to start on boot
-          # Check services status
-          sudo service codedeploy-agent status
-          sudo systemctl status mongod
-          # Add error handling
-          if [ $? -ne 0 ]; then
-          echo "Error: Service check failed"
-          exit 1
-          fi
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+          sudo systemctl enable mongod
+
+          # Signal EC2 instance completion
+          # /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+
 
   ##########################
   # CodeBuild Frontend Configuration
@@ -157,12 +222,12 @@ Resources:
 
   CodeDeployDeploymentGroup:
     Type: AWS::CodeDeploy::DeploymentGroup
-    DependsOn: 
+    DependsOn:
       - CodeDeployApplication
       - EC2Instance
     Properties:
       ApplicationName: !Ref CodeDeployApplication
-      DeploymentGroupName: !Sub "${AWS::StackName}-deployment-group"
+      DeploymentGroupName: !Sub ${AWS::StackName}-deployment-group
       ServiceRoleArn: !GetAtt CodeDeployRole.Arn
       DeploymentStyle:
         DeploymentType: IN_PLACE
@@ -185,7 +250,7 @@ Resources:
     Properties:
       VersioningConfiguration:
         Status: Enabled
-  
+
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:
@@ -199,7 +264,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::588738579221:policy/service-role/AWSCodePipelineServiceRole-ap-south-1-final
       RoleName: CodePipelineRole
-  
+
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -214,7 +279,7 @@ Resources:
               ActionTypeId:
                 Category: Source
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeStarSourceConnection
               OutputArtifacts:
                 - Name: SourceOutput
@@ -229,7 +294,7 @@ Resources:
               ActionTypeId:
                 Category: Build
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeBuild
               InputArtifacts:
                 - Name: SourceOutput
@@ -244,7 +309,7 @@ Resources:
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeDeploy
               InputArtifacts:
                 - Name: BuildOutput
@@ -257,24 +322,24 @@ Resources:
   # CodeBuild Backend resources
   ##########################
   CodeBuildProjectBackend:
-      Type: AWS::CodeBuild::Project
-      Properties:
-        Name: !Sub ${AWS::StackName}-build-backend
-        Artifacts:
-          Type: S3
-          Location: 123456-abdullah-bucket
-        Environment:
-          ComputeType: BUILD_GENERAL1_SMALL
-          Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
-          Type: LINUX_CONTAINER
-        ServiceRole: !Ref CodeBuildRole
-        Source:
-          Type: GITHUB
-          Auth:
-            Type: OAUTH
-          Location: https://github.com/realAbdullah4504/aws-codedeploy.git
-          BuildSpec: backend/buildspec.yaml
-        SourceVersion: cloud-formation-stack
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-build-backend
+      Artifacts:
+        Type: S3
+        Location: 123456-abdullah-bucket
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Type: LINUX_CONTAINER
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Type: GITHUB
+        Auth:
+          Type: OAUTH
+        Location: https://github.com/realAbdullah4504/aws-codedeploy.git
+        BuildSpec: backend/buildspec.yaml
+      SourceVersion: cloud-formation-stack
 
   ##########################
   # CodeDeploy Backend resources
@@ -287,12 +352,12 @@ Resources:
 
   CodeDeployDeploymentBackendGroup:
     Type: AWS::CodeDeploy::DeploymentGroup
-    DependsOn: 
+    DependsOn:
       - CodeDeployApplication
       - EC2Instance
     Properties:
       ApplicationName: !Ref CodeDeployApplicationBackend
-      DeploymentGroupName: !Sub "${AWS::StackName}-deployment-backend-group"
+      DeploymentGroupName: !Sub ${AWS::StackName}-deployment-backend-group
       ServiceRoleArn: !GetAtt CodeDeployRole.Arn
       DeploymentStyle:
         DeploymentType: IN_PLACE
@@ -324,7 +389,7 @@ Resources:
               ActionTypeId:
                 Category: Source
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeStarSourceConnection
               OutputArtifacts:
                 - Name: SourceOutput
@@ -339,7 +404,7 @@ Resources:
               ActionTypeId:
                 Category: Build
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeBuild
               InputArtifacts:
                 - Name: SourceOutput
@@ -354,7 +419,7 @@ Resources:
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
-                Version: "1"
+                Version: '1'
                 Provider: CodeDeploy
               InputArtifacts:
                 - Name: BuildOutput
