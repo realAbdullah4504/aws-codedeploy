@@ -1,4 +1,5 @@
 version: 0.2
+
 env: 
   variables:
     AWS_REGION: us-east-1  # Public ECR only works in us-east-1
@@ -9,19 +10,25 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR Public...
-      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-      - docker pull ${REPOSITORY_URI}:latest || echo "No existing image found, proceeding with a fresh build."
-      - codebuild-breakpoint 
+      - echo "Logging in to Amazon ECR Public..."
+      - aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin public.ecr.aws
+      - echo "Pulling the existing Docker image if it exists..."
+      - docker pull ${REPOSITORY_URI}:latest || echo "No existing image found. Proceeding with a fresh build."
+      - echo "Entering CodeBuild breakpoint (if enabled)..."
+      - codebuild-breakpoint
+
   build:
     commands:
-      - echo Build started on `date`
+      - echo "Build started on `date`"
+      - echo "Building the Docker image..."
       - docker build \
-        --cache-from ${REPOSITORY_URI}:latest \
-        --build-arg BUILDKIT_INLINE_CACHE=1 \
-        -t ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER} \
-        -t ${REPOSITORY_URI}:latest \
-        handyman/
+          --cache-from ${REPOSITORY_URI}:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          -t ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER} \
+          -t ${REPOSITORY_URI}:latest \
+          handyman/
+      - echo "Tagging the image with the build number..."
       - docker tag ${REPOSITORY_URI}:latest ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
+      - echo "Pushing the Docker images to Amazon ECR Public..."
       - docker push ${REPOSITORY_URI}:latest
       - docker push ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
