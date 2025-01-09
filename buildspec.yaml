@@ -8,7 +8,6 @@ env:
 phases:
   pre_build:
     commands:
-      - codebuild-breakpoint 
       - echo Logging in to Amazon ECR Public...
       - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - REPOSITORY_URI=public.ecr.aws/${REGISTRY_ALIAS}/${ECR_REPOSITORY_NAME}
@@ -16,6 +15,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
+      - codebuild-breakpoint 
       - docker build \
         --cache-from ${REPOSITORY_URI}:latest \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
