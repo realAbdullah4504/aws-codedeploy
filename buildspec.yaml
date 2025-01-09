@@ -2,9 +2,9 @@ version: 0.2
 
 env: 
   variables:
-    AWS_REGION: us-east-1  # Public ECR only works in us-east-1
+    AWS_REGION: us-east-1
     ECR_REPOSITORY_NAME: handyman-app
-    REGISTRY_ALIAS: n0k0s5r9  # Your public registry alias
+    REGISTRY_ALIAS: n0k0s5r9
     REPOSITORY_URI: public.ecr.aws/${REGISTRY_ALIAS}/${ECR_REPOSITORY_NAME}
 
 phases:
@@ -14,9 +14,7 @@ phases:
       - aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin public.ecr.aws
       - echo "Pulling the existing Docker image if it exists..."
       - docker pull ${REPOSITORY_URI}:latest || echo "No existing image found. Proceeding with a fresh build."
-      - echo "Entering CodeBuild breakpoint (if enabled)..."
-      - codebuild-breakpoint
-
+      
   build:
     commands:
       - echo "Build started on `date`"
@@ -27,8 +25,6 @@ phases:
           -t ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER} \
           -t ${REPOSITORY_URI}:latest \
           handyman/
-      - echo "Tagging the image with the build number..."
-      - docker tag ${REPOSITORY_URI}:latest ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
-      - echo "Pushing the Docker images to Amazon ECR Public..."
       - docker push ${REPOSITORY_URI}:latest
       - docker push ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
+      - echo "Build completed on `date`"
