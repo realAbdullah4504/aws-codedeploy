@@ -5,14 +5,14 @@ files:
     destination: /home/ubuntu/handyman/
 hooks:
   BeforeInstall:
-    - location: scripts/install
+    - location: scripts/install_dependencies
       timeout: 300
       runas: root
   ApplicationStop:
-    - location: scripts/stop
+    - location: scripts/stop_server
       timeout: 300
       runas: root
   ApplicationStart:
-    - location: scripts/start
+    - location: scripts/start_server
       timeout: 300
       runas: root

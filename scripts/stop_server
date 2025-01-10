@@ -1,5 +1,5 @@
 
-#!/bin/bash
+#!/bin/bash -ex
 
 if docker ps | grep -q "handyman"; then
 cd /home/ec2-user/handyman
