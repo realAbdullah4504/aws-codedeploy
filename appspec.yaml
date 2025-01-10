@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: handyman/handyman-docker-compose.yml
-    destination: /home/ubuntu/handyman
+  - source: handyman/
+    destination: /home/ubuntu/handyman/
 hooks:
   BeforeInstall:
     - location: scripts/install_dependencies

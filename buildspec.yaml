@@ -28,5 +28,5 @@ artifacts:
   files:
     - 'handyman/handyman-docker-compose.yml'
     - 'handyman/mongo-docker-compose.yml'
-    - 'appspec.yml'
+    - 'appspec.yaml'
     - 'scripts/*'
