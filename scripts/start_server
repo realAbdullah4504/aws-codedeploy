@@ -1,5 +1,5 @@
 #!/bin/bash -ex
 
 echo "starting application"
-cd /home/ec2-user/handyman
+cd /home/ec2-user/handyman-app
 docker-compose -f handyman-docker-compose.yml -f mongo-docker-compose.yml up -d
