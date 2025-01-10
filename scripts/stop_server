@@ -1,4 +1,3 @@
-
 #!/bin/bash -ex
 
 if docker ps | grep -q "handyman"; then
