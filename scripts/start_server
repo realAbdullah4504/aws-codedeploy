@@ -1,2 +1,3 @@
 #!/bin/bash
+cd /home/ec2-user/handyman
 docker-compose -f handyman-docker-compose.yml -f mongo-docker-compose.yml up -d
