@@ -11,22 +11,22 @@ phases:
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR Public..."
-      # - aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin public.ecr.aws
-      # - echo "Pulling the existing Docker image if it exists..."
-      # - docker pull ${REPOSITORY_URI}:latest || echo "No existing image found. Proceeding with a fresh build."
+      - aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin public.ecr.aws
+      - echo "Pulling the existing Docker image if it exists..."
+      - docker pull ${REPOSITORY_URI}:latest || echo "No existing image found. Proceeding with a fresh build."
       
   build:
     commands:
       - echo "Build started on `date`"
       - echo "Building the Docker image..."
-      # - cd handyman
-      # - docker build --cache-from ${REPOSITORY_URI}:latest --build-arg BUILDKIT_INLINE_CACHE=1 -t ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER} -t ${REPOSITORY_URI}:latest .
-      # - docker push ${REPOSITORY_URI}:latest
-      # - docker push ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
-      # - echo "Build completed on `date`"
+      - cd handyman
+      - docker build --cache-from ${REPOSITORY_URI}:latest --build-arg BUILDKIT_INLINE_CACHE=1 -t ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER} -t ${REPOSITORY_URI}:latest .
+      - docker push ${REPOSITORY_URI}:latest
+      - docker push ${REPOSITORY_URI}:${CODEBUILD_BUILD_NUMBER}
+      - echo "Build completed on `date`"
 artifacts:
   files:
     - 'handyman/handyman-docker-compose.yml'
     - 'handyman/mongo-docker-compose.yml'
-    - 'appspec.yml'
+    - 'appspec.yaml'
     - 'scripts/*'
