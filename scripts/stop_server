@@ -1,6 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash
+set -ex
 
-if docker ps | grep -q "handyman"; then
-cd /home/ec2-user/handyman
-docker-compose -f handyman-docker-compose.yml -f mongo-docker-compose.yml down
-fi
+echo "Stopping article_api application..."

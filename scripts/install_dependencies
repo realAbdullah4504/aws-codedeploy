@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash
+set -ex
 
-# aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin public.ecr.aws
-mkdir -p /home/ec2-user/handyman
+mkdir -p /home/ec2-user/handyman-app
