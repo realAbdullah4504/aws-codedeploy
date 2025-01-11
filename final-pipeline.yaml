@@ -147,6 +147,9 @@ Resources:
           sudo yum install -qy mongodb-mongosh-shared-openssl3
           sudo yum install -y mongodb-org-8.0.4 mongodb-org-database-8.0.4 mongodb-org-server-8.0.4 mongodb-org-mongos-8.0.4 mongodb-org-tools-8.0.4
 
+          sudo chown -R mongod:mongod /var/lib/mongo
+          sudo chmod -R 755 /var/lib/mongo
+
           # Start MongoDB service
           sudo systemctl start mongod
           sudo systemctl enable mongod
