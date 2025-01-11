@@ -12,11 +12,11 @@ INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 aws ec2 attach-volume \
     --volume-id $VOLUME_ID \
     --instance-id $INSTANCE_ID \
-    --device /dev/xvdf
+    --device /dev/xvdp
 
 # Device and Mount Point
 
-DEVICE="/dev/xvdf"
+DEVICE="/dev/xvdp"
 MOUNT_POINT="/mnt/mongodb"
 while [ ! -e $DEVICE ]; do 
 echo "Waiting for device $DEVICE to appear..."
