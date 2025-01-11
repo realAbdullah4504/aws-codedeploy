@@ -14,6 +14,11 @@ services:
 
 volumes:
   mongo-db-data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/mongodb'
 networks:
   mongo-network:
     name: mongo-network
